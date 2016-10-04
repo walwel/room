@@ -1,0 +1,19 @@
+修改  roomPwrManSys.c
+1：开头添加 #include "hal_adc.h"
+2：找到 ’人体红外节点代码部分‘ 修改为  #define SAFTY_IO_GROUP **0**  #define SAFTY_IO_BIT **0**
+3：找到 ’人体红外节点代码部分‘ 找到 if(type == ResInit) 内修改为  HalIOSetInput(SAFTY_IO_GROUP, SAFTY_IO_BIT, **Pull_Up**);
+4：在 void sensorIRPersResAvailable 结尾部分添加
+		void sensorIRPersTimeout(struct ep_info_t *ep);
+		void sensorIRPersTimeout(struct ep_info_t *ep)
+		{
+			uint8 bit = 4;
+			uint8 bit1 = 2;
+			uint8 value = HalIOGetLevel(SAFTY_IO_GROUP, SAFTY_IO_BIT);
+			SendData(ep->ep, &value, 0x0000, TRANSFER_ENDPOINT, sizeof(value));
+
+			SETBIT(P1, bit1);
+			if (value == 1)
+			  SETBIT(P1, bit);
+			else
+			  CLRBIT(P1, bit); 
+		}
